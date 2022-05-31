@@ -3,6 +3,8 @@ import {OFFERS, CITIES, EVENT_TYPES, DESCRIPTION} from '../constants.js';
 import dayjs from 'dayjs';
 
 const generateDate = () => dayjs().add(getRandomInteger(0, 10), 'day');
+const generateDateStart = (date) => dayjs(date).add(getRandomInteger(1,6), 'hour').format();
+const generateDateTo = (dateStart) => dayjs(dateStart).add(getRandomInteger(10, 240), 'minute').format();
 
 const generateType = () => EVENT_TYPES[getRandomInteger(0, EVENT_TYPES.length - 1)].toLowerCase();
 const generateCity = () => CITIES[getRandomInteger(0, CITIES.length - 1)];
@@ -54,14 +56,16 @@ const generateId = () => getRandomInteger(0, 1000);
 
 export const generateEventEdit = () => {
   const date = generateDate();
+  const dateStart = generateDateStart(date);
+  const dateTo = generateDateTo(dateStart);
 
   return {
     'base_price': generatePrice(),
-    'date_from': date,
-    'date_to': date,
+    'date_from': dateStart,
+    'date_to': dateTo,
     destination: generateDescriptionDestination(),
     id: generateId(),
-    'is_favorite': false,
+    'is_favorite': Boolean(getRandomInteger(0,1)),
     offers: generateOffers(),
     type: generateType(),
   };

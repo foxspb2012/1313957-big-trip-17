@@ -1,5 +1,5 @@
 import {createElement} from '../render.js';
-import dayjs from 'dayjs';
+import {formatDate} from '../utils.js';
 import {CITIES, OFFERS, OFFERS_BY_TYPE} from '../constants.js';
 
 const createEventEditTemplate = (eventPoint) => {
@@ -11,8 +11,6 @@ const createEventEditTemplate = (eventPoint) => {
     offers,
     type,
   } = eventPoint;
-
-  const formatDateTime = (date) => dayjs(date).format('DD/MM/YY HH:mm');
 
   const createDestinationPoints = () => (
     `${CITIES.map((elem) =>
@@ -34,7 +32,7 @@ const createEventEditTemplate = (eventPoint) => {
           <label class="event__offer-label" for="event-offer-${elem.id}-1">
             <span class="event__offer-title">${elem.title}</span>
             &plus;&euro;&nbsp;
-            <span className="event__offer-price">${elem.price}</span>
+            <span class="event__offer-price">${elem.price}</span>
           </label>
         </div>`).join('')}
       </div>
@@ -136,10 +134,10 @@ const createEventEditTemplate = (eventPoint) => {
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDateTime(dateFrom)}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(dateFrom,'DD/MM/YY HH:mm' )}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDateTime(dateTo)}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(dateTo,'DD/MM/YY HH:mm' )}">
           </div>
 
           <div class="event__field-group  event__field-group--price">

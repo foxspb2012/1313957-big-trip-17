@@ -17,6 +17,8 @@ const shuffle = (array) => {
   return array;
 };
 
+const formatDate = (date, format) => dayjs(date).format(format);
+
 const getDuration = (dateStart, dateEnd) => {
 
   const difference = dayjs(dateEnd).diff(dayjs(dateStart), 'minute');
@@ -31,6 +33,7 @@ const getDuration = (dateStart, dateEnd) => {
 export {
   getRandomInteger,
   shuffle,
+  formatDate,
   getDuration,
 };
 
