@@ -8,6 +8,7 @@ const createEventEditTemplate = (eventPoint) => {
     date_from: dateFrom,
     date_to: dateTo,
     destination,
+    id,
     offers,
     type,
   } = eventPoint;
@@ -27,9 +28,9 @@ const createEventEditTemplate = (eventPoint) => {
             <div class="event__available-offers">
             ${OFFERS.filter((item) => offersByType[0].offers.includes(item.id)).map((elem) =>
         `<div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${elem.id}-1" type="checkbox"
-              name="event-offer-${elem.id}" ${elem.id%2 ? 'checked' : ''}>
-          <label class="event__offer-label" for="event-offer-${elem.id}-1">
+          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${elem.title}-${id}" type="checkbox"
+              name="event-offer-${elem.title}-${id}" ${elem.title.length % 2 ? 'checked' : ''}>
+          <label class="event__offer-label" for="event-offer-${elem.title}-${id}">
             <span class="event__offer-title">${elem.title}</span>
             &plus;&euro;&nbsp;
             <span class="event__offer-price">${elem.price}</span>
