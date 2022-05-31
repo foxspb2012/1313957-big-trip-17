@@ -56,12 +56,12 @@ const generateId = () => getRandomInteger(0, 1000);
 
 export const generateEventEdit = () => {
   const date = generateDate();
-  const dateStart = generateDateStart(date);
-  const dateTo = generateDateTo(dateStart);
+  const dateFrom = generateDateStart(date);
+  const dateTo = generateDateTo(dateFrom);
 
   return {
     'base_price': generatePrice(),
-    'date_from': dateStart,
+    'date_from': dateFrom,
     'date_to': dateTo,
     destination: generateDescriptionDestination(),
     id: generateId(),
