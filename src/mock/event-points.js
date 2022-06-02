@@ -54,7 +54,7 @@ const generateDescriptionDestination = () => ({
 
 const generateId = () => getRandomInteger(0, 1000);
 
-export const generateEventEdit = () => {
+export const generateEventPoints = () => {
   const date = generateDate();
   const dateFrom = generateDateStart(date);
   const dateTo = generateDateTo(dateFrom);

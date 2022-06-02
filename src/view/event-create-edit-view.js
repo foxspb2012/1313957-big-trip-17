@@ -2,7 +2,7 @@ import {createElement} from '../render.js';
 import {formatDate} from '../utils.js';
 import {CITIES, OFFERS, OFFERS_BY_TYPE} from '../constants.js';
 
-const createEventEditTemplate = (eventPoint) => {
+const createEventEditTemplate = (eventPoint, mode) => {
   const {
     base_price: basePrice,
     date_from: dateFrom,
@@ -44,7 +44,6 @@ const createEventEditTemplate = (eventPoint) => {
     `<section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destination.description}</p>
-
       ${destination.pictures.length > 0 ?
       `<div class="event__photos-container">
         <div class="event__photos-tape">
@@ -54,11 +53,28 @@ const createEventEditTemplate = (eventPoint) => {
     </section>`
   );
 
+  const getButtons = () => {
+    if (mode === 'edit') {
+      return (
+        `<button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+        <button class="event__reset-btn" type="reset">Delete</button>
+        <button class="event__rollup-btn" type="button">
+          <span class="visually-hidden">Open event</span>
+        </button>`);
+    } else {
+      return (
+        `<button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+        <button class="event__reset-btn" type="reset">Cancel</button>`
+      );
+    }};
+
   const destinationPoints = createDestinationPoints();
 
   const offersTemplate = offers.length > 0 ? createOffersTemplate() : '';
 
   const destinationDescription = destination.description.length > 0 ? createDestinationDescription() : '';
+
+  const buttons = getButtons(mode);
 
   return (
     ` <li class="trip-events__item">
@@ -150,11 +166,7 @@ const createEventEditTemplate = (eventPoint) => {
             <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
-          <button class="event__rollup-btn" type="button">
-            <span class="visually-hidden">Open event</span>
-          </button>
+          ${buttons}
         </header>
         <section class="event__details">
           ${offersTemplate}
@@ -165,24 +177,29 @@ const createEventEditTemplate = (eventPoint) => {
   );
 };
 
-export default class EventEditView {
-  constructor(newPoint) {
-    this.newPoint = newPoint;
+export default class EventCreateEditView {
+  #element = null;
+  #newPoint = null;
+  #mode = null;
+
+  constructor(newPoint, mode) {
+    this.#newPoint = newPoint;
+    this.#mode = mode;
   }
 
-  getTemplate() {
-    return createEventEditTemplate(this.newPoint);
+  get template() {
+    return createEventEditTemplate(this.#newPoint, this.#mode);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
