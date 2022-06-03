@@ -100,6 +100,11 @@ const DESCRIPTION = [
   'Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.'
 ];
 
+const Mode = {
+  CREATE: 'create',
+  EDIT: 'edit',
+};
+
 export {
   COUNT_POINTS,
   OFFERS,
@@ -107,4 +112,5 @@ export {
   CITIES,
   EVENT_TYPES,
   DESCRIPTION,
+  Mode
 };
