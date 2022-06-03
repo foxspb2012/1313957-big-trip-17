@@ -1,8 +1,10 @@
 import {COUNT_POINTS} from '../constants.js';
-import {generateEventEdit} from '../mock/event-edit.js';
+import {generateEventPoints} from '../mock/event-points.js';
 
 export default class EventModel {
-  event = Array.from({length: COUNT_POINTS}, generateEventEdit);
+  #event = Array.from({length: COUNT_POINTS}, generateEventPoints);
 
-  getEvents = () => this.event;
+  get events () {
+    return this.#event;
+  }
 }
