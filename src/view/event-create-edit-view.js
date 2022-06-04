@@ -1,6 +1,6 @@
 import {createElement} from '../render.js';
 import {formatDate} from '../utils.js';
-import {CITIES, OFFERS, OFFERS_BY_TYPE} from '../constants.js';
+import {CITIES, OFFERS, OFFERS_BY_TYPE, Mode} from '../constants.js';
 
 const createEventEditTemplate = (eventPoint, mode) => {
   const {
@@ -54,19 +54,19 @@ const createEventEditTemplate = (eventPoint, mode) => {
   );
 
   const getButtons = () => {
-    if (mode === 'edit') {
+    if (mode === Mode.EDIT) {
       return (
         `<button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
         <button class="event__reset-btn" type="reset">Delete</button>
         <button class="event__rollup-btn" type="button">
           <span class="visually-hidden">Open event</span>
         </button>`);
-    } else {
-      return (
-        `<button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Cancel</button>`
-      );
-    }};
+    }
+    return (
+      `<button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+      <button class="event__reset-btn" type="reset">Cancel</button>`
+    );
+  };
 
   const destinationPoints = createDestinationPoints();
 
