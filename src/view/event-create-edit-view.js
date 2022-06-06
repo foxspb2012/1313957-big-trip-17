@@ -1,6 +1,20 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {formatDate} from '../utils.js';
 import {CITIES, OFFERS, OFFERS_BY_TYPE, Mode} from '../constants.js';
+
+const EVENT_CREATE = {
+  'base_price': '',
+  'date_from': formatDate(new Date(), 'YYYY-MM-DD HH:mm'),
+  'date_to': formatDate(new Date(), 'YYYY-MM-DD HH:mm'),
+  destination: {
+    description: [],
+    name: '',
+    pictures: [],
+  },
+  id: null,
+  offers: [],
+  type: 'taxi',
+};
 
 const createEventEditTemplate = (eventPoint, mode) => {
   const {
@@ -143,7 +157,7 @@ const createEventEditTemplate = (eventPoint, mode) => {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${destination.name} list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" list="destination-list-1" value=${destination.name}>
             <datalist id="destination-list-1">
              ${destinationPoints}
             </datalist>
@@ -177,29 +191,46 @@ const createEventEditTemplate = (eventPoint, mode) => {
   );
 };
 
-export default class EventCreateEditView {
-  #element = null;
-  #newPoint = null;
+export default class EventCreateEditView extends AbstractView {
+  #eventPoint = null;
   #mode = null;
 
-  constructor(newPoint, mode) {
-    this.#newPoint = newPoint;
+  constructor(eventPoint = EVENT_CREATE, mode) {
+    super();
+    this.#eventPoint = eventPoint;
     this.#mode = mode;
   }
 
   get template() {
-    return createEventEditTemplate(this.#newPoint, this.#mode);
+    return createEventEditTemplate(this.#eventPoint, this.#mode);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
+  setFormSubmitHandler = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+  };
 
-    return this.#element;
-  }
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  };
 
-  removeElement() {
-    this.#element = null;
-  }
+  setDeleteClickHandler = (callback) => {
+    this._callback.deleteClick = callback;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
+  };
+
+  #deleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.deleteClick();
+  };
+
+  setEditClickHandler = (callback) => {
+    this._callback.editClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+  };
+
+  #editClickHandler = () => {
+    this._callback.editClick();
+  };
 }
