@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {OFFERS, OFFERS_BY_TYPE} from '../constants.js';
 import {formatDate, getDuration} from '../utils.js';
 
@@ -71,11 +71,11 @@ const createEventPointTemplate = (eventPoint) => {
   );
 };
 
-export default class EventPointView {
-  #element = null;
+export default class EventPointView extends AbstractView {
   #newPoint = null;
 
   constructor(newPoint) {
+    super();
     this.#newPoint = newPoint;
   }
 
@@ -83,15 +83,12 @@ export default class EventPointView {
     return createEventPointTemplate(this.#newPoint);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
+  setEditClickHandler = (callback) => {
+    this._callback.editClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+  };
 
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #editClickHandler = () => {
+    this._callback.editClick();
+  };
 }

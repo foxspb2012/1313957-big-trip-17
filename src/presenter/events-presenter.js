@@ -4,7 +4,7 @@ import ListEmpty from '../view/list-empty-view.js';
 import EventsListView from '../view/events-list-view.js';
 import EventPointView from '../view/event-point-view.js';
 import EventCreateEditView from '../view/event-create-edit-view.js';
-import {render} from '../render.js';
+import {render} from '../framework/render.js';
 import {Mode} from '../constants.js';
 
 const tripMainElement = document.querySelector('.trip-main');
@@ -64,18 +64,23 @@ export default class EventsPresenter {
       }
     };
 
-    eventPointComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
+    eventPointComponent.setEditClickHandler(() => {
       replacePointToForm();
       document.addEventListener('keydown', onEscKeyDown);
     });
 
-    eventEditComponent.element.querySelector('.event--edit').addEventListener('submit', (evt) => {
+    eventEditComponent.setEditClickHandler(() => {
+      replaceFormToPoint();
+      document.removeEventListener('keydown', onEscKeyDown);
+    });
+
+    eventEditComponent.setFormSubmitHandler((evt) => {
       evt.preventDefault();
       replaceFormToPoint();
       document.removeEventListener('keydown', onEscKeyDown);
     });
 
-    eventEditComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
+    eventEditComponent.setDeleteClickHandler(() => {
       replaceFormToPoint();
       document.removeEventListener('keydown', onEscKeyDown);
     });
