@@ -105,6 +105,12 @@ const Mode = {
   EDIT: 'edit',
 };
 
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PAST: 'past',
+};
+
 export {
   COUNT_POINTS,
   OFFERS,
@@ -112,5 +118,6 @@ export {
   CITIES,
   EVENT_TYPES,
   DESCRIPTION,
-  Mode
+  Mode,
+  FilterType,
 };

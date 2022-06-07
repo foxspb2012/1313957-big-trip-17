@@ -1,25 +1,22 @@
+import PointPresenter from './point-presenter.js';
 import SortView from '../view/sort-view.js';
-import FilterView from '../view/filter-view.js';
-import ListEmpty from '../view/list-empty-view.js';
 import EventsListView from '../view/events-list-view.js';
-import EventPointView from '../view/event-point-view.js';
-import EventCreateEditView from '../view/event-create-edit-view.js';
+import ListEmpty from '../view/list-empty-view.js';
 import {render} from '../framework/render.js';
-import {Mode} from '../constants.js';
-
-const tripMainElement = document.querySelector('.trip-main');
-const tripFilterElement = tripMainElement.querySelector('.trip-controls__filters');
+import {updatePoint} from '../utils/common.js';
 
 export default class EventsPresenter {
 
+  #sortComponent = new SortView();
+  #listEmptyComponent = new ListEmpty();
   #eventsListComponent = new EventsListView();
+
   #eventContainer = null;
   #eventModel = null;
-  #modeEdit = null;
   #eventsList = [];
+  #eventPresenter = new Map();
 
   constructor(eventContainer, eventModel) {
-    this.#modeEdit = Mode.EDIT;
     this.#eventContainer = eventContainer;
     this.#eventModel = eventModel;
   }
@@ -29,62 +26,42 @@ export default class EventsPresenter {
     this.#renderEvents();
   };
 
-  #renderEvents = () => {
-    render(new FilterView(), tripFilterElement);
-    if(this.#eventsList.every((item) => item.is_favorite)) {
-      render(new ListEmpty(), this.#eventContainer);
-    } else {
-      render(new SortView(), this.#eventContainer);
+  #handleModeChange = () => {
+    this.#eventPresenter.forEach((presenter) => presenter.resetView());
+  };
 
-      for (let i=0; i<this.#eventsList.length; i++) {
-        this.#renderPoint(this.#eventsList[i]);
-      }
-    }
+  #handleEventChange = (updatedEvent) => {
+    this.#eventsList = updatePoint(this.#eventsList, updatedEvent);
+    this.#eventPresenter.get(updatedEvent.id).init(updatedEvent);
+  };
 
+  #renderSort = () => {
+    render(this.#sortComponent, this.#eventContainer);
+  };
+
+  #renderComponentList = () => {
     render(this.#eventsListComponent, this.#eventContainer);
   };
 
-  #renderPoint = (eventPoint) => {
-    const eventPointComponent = new EventPointView(eventPoint);
-    const eventEditComponent = new EventCreateEditView(eventPoint, this.#modeEdit);
+  #renderNoEvents = () => {
+    render(this.#listEmptyComponent, this.#eventContainer);
+  };
 
-    const replacePointToForm = () => {
-      this.#eventsListComponent.element.replaceChild(eventEditComponent.element, eventPointComponent.element);
-    };
+  #renderEvent = (item) => {
+    const eventPresenter = new PointPresenter(this.#eventsListComponent.element, this.#handleEventChange, this.#handleModeChange);
+    eventPresenter.init(item);
+    this.#eventPresenter.set(item.id, eventPresenter);
+  };
 
-    const replaceFormToPoint = () => {
-      this.#eventsListComponent.element.replaceChild(eventPointComponent.element, eventEditComponent.element);
-    };
+  #renderEvents = () => {
+    if (!this.#eventsList.length) {
+      this.#renderNoEvents();
+      return;
+    }
 
-    const onEscKeyDown = (evt) => {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        evt.preventDefault();
-        replaceFormToPoint();
-        document.removeEventListener('keydown', onEscKeyDown);
-      }
-    };
+    this.#renderSort();
+    this.#renderComponentList();
 
-    eventPointComponent.setEditClickHandler(() => {
-      replacePointToForm();
-      document.addEventListener('keydown', onEscKeyDown);
-    });
-
-    eventEditComponent.setEditClickHandler(() => {
-      replaceFormToPoint();
-      document.removeEventListener('keydown', onEscKeyDown);
-    });
-
-    eventEditComponent.setFormSubmitHandler((evt) => {
-      evt.preventDefault();
-      replaceFormToPoint();
-      document.removeEventListener('keydown', onEscKeyDown);
-    });
-
-    eventEditComponent.setDeleteClickHandler(() => {
-      replaceFormToPoint();
-      document.removeEventListener('keydown', onEscKeyDown);
-    });
-
-    render(eventPointComponent, this.#eventsListComponent.element);
+    this.#eventsList.forEach(this.#renderEvent);
   };
 }

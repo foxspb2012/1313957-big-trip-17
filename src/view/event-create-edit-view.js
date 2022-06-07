@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {formatDate} from '../utils.js';
+import {formatDate} from '../utils/event.js';
 import {CITIES, OFFERS, OFFERS_BY_TYPE, Mode} from '../constants.js';
 
 const EVENT_CREATE = {
@@ -16,7 +16,7 @@ const EVENT_CREATE = {
   type: 'taxi',
 };
 
-const createEventEditTemplate = (eventPoint, mode) => {
+const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
   const {
     base_price: basePrice,
     date_from: dateFrom,
@@ -212,7 +212,7 @@ export default class EventCreateEditView extends AbstractView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this._callback.formSubmit();
+    this._callback.formSubmit(this.#eventPoint);
   };
 
   setDeleteClickHandler = (callback) => {
