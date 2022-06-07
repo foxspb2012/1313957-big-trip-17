@@ -53,6 +53,11 @@ export default class EventsPresenter {
     this.#eventPresenter.set(item.id, eventPresenter);
   };
 
+  #clearEventList = () => {
+    this.#eventPresenter.forEach((presenter) => presenter.destroy());
+    this.#eventPresenter.clear();
+  };
+
   #renderEvents = () => {
     if (!this.#eventsList.length) {
       this.#renderNoEvents();
