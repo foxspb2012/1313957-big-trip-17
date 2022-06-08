@@ -1,10 +1,10 @@
 import PointPresenter from './point-presenter.js';
+import TripInfoView from '../view/trip-info-view.js';
 import SortView from '../view/sort-view.js';
+import FilterView from '../view/filter-view.js';
 import EventsListView from '../view/events-list-view.js';
 import ListEmpty from '../view/list-empty-view.js';
 import {updatePoint} from '../utils/common.js';
-import FilterView from '../view/filter-view.js';
-import TripInfoView from '../view/trip-info-view.js';
 import {generateFilter} from '../mock/filters.js';
 import {render, RenderPosition} from '../framework/render.js';
 

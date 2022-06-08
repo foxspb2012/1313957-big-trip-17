@@ -1,7 +1,7 @@
-import {render, replace, remove} from '../framework/render.js';
-import EventCreateEditView from '../view/event-create-edit-view.js';
 import EventPointView from '../view/event-point-view.js';
+import EventCreateEditView from '../view/event-create-edit-view.js';
 import {Mode} from '../constants.js';
+import {render, replace, remove} from '../framework/render.js';
 
 export default class PointPresenter {
   #pointComponent = null;

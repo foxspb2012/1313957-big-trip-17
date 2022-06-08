@@ -1,5 +1,5 @@
-import EventsPresenter from './presenter/events-presenter.js';
 import EventModel from './model/event-model.js';
+import EventsPresenter from './presenter/events-presenter.js';
 
 const tripEventsContainer = document.querySelector('.trip-events');
 const eventModel = new EventModel();
