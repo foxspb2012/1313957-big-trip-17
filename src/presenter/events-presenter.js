@@ -2,12 +2,20 @@ import PointPresenter from './point-presenter.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
 import ListEmpty from '../view/list-empty-view.js';
-import {render} from '../framework/render.js';
 import {updatePoint} from '../utils/common.js';
+import FilterView from '../view/filter-view.js';
+import TripInfoView from '../view/trip-info-view.js';
+import {generateFilter} from '../mock/filters.js';
+import {render, RenderPosition} from '../framework/render.js';
+
+const tripMainElement = document.querySelector('.trip-main');
+const tripFilterElement = tripMainElement.querySelector('.trip-controls__filters');
 
 export default class EventsPresenter {
 
+  #tripInfoComponent = new TripInfoView();
   #sortComponent = new SortView();
+  #filterComponent = null;
   #listEmptyComponent = new ListEmpty();
   #eventsListComponent = new EventsListView();
 
@@ -23,6 +31,7 @@ export default class EventsPresenter {
 
   init = () => {
     this.#eventsList = [...this.#eventModel.events];
+    this.#filterComponent = new FilterView(generateFilter(this.#eventsList));
     this.#renderEvents();
   };
 
@@ -35,8 +44,16 @@ export default class EventsPresenter {
     this.#eventPresenter.get(updatedEvent.id).init(updatedEvent);
   };
 
+  #renderTripInfo = () => {
+    render(this.#tripInfoComponent, tripMainElement, RenderPosition.AFTERBEGIN);
+  };
+
   #renderSort = () => {
     render(this.#sortComponent, this.#eventContainer);
+  };
+
+  #renderFilter = () => {
+    render(this.#filterComponent, tripFilterElement);
   };
 
   #renderComponentList = () => {
@@ -63,10 +80,10 @@ export default class EventsPresenter {
       this.#renderNoEvents();
       return;
     }
-
+    this.#renderTripInfo();
     this.#renderSort();
+    this.#renderFilter();
     this.#renderComponentList();
-
     this.#eventsList.forEach(this.#renderEvent);
   };
 }

@@ -102,6 +102,6 @@ export default class PointPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#changeData({...this.#event, isFavorite: !this.#event.is_favorite});
+    this.#changeData({...this.#event, 'is_favorite': !this.#event.is_favorite});
   };
 }
