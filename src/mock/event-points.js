@@ -1,8 +1,8 @@
-import {getRandomInteger, shuffle} from '../utils.js';
+import {getRandomInteger, shuffle} from '../utils/common.js';
 import {OFFERS, CITIES, EVENT_TYPES, DESCRIPTION} from '../constants.js';
 import dayjs from 'dayjs';
 
-const generateDate = () => dayjs().add(getRandomInteger(0, 10), 'day');
+const generateDate = () => dayjs().add(getRandomInteger(-10, 10), 'day');
 const generateDateStart = (date) => dayjs(date).add(getRandomInteger(1,6), 'hour').format();
 const generateDateTo = (dateStart) => dayjs(dateStart).add(getRandomInteger(10, 240), 'minute').format();
 

@@ -1,6 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import {OFFERS, OFFERS_BY_TYPE} from '../constants.js';
-import {formatDate, getDuration} from '../utils.js';
+import {formatDate, getDuration} from '../utils/event.js';
 
 const createEventPointTemplate = (eventPoint) => {
   const {
@@ -90,5 +90,15 @@ export default class EventPointView extends AbstractView {
 
   #editClickHandler = () => {
     this._callback.editClick();
+  };
+
+  setFavoriteClickHandler = (callback) => {
+    this._callback.favoriteClick = callback;
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
+  };
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.favoriteClick();
   };
 }
