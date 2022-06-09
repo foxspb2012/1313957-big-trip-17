@@ -101,15 +101,15 @@ const DESCRIPTION = [
 ];
 
 const Mode = {
-  CREATE: 'create',
+  DEFAULT: 'default',
   EDIT: 'edit',
 };
 
-const FilterType = {
-  EVERYTHING: 'everything',
-  FUTURE: 'future',
-  PAST: 'past',
-};
+const FILTER_TYPES = [
+  'everything',
+  'future',
+  'past',
+];
 
 export {
   COUNT_POINTS,
@@ -119,5 +119,5 @@ export {
   EVENT_TYPES,
   DESCRIPTION,
   Mode,
-  FilterType,
+  FILTER_TYPES,
 };

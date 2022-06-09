@@ -1,6 +1,7 @@
 import {getRandomInteger, shuffle} from '../utils/common.js';
 import {OFFERS, CITIES, EVENT_TYPES, DESCRIPTION} from '../constants.js';
 import dayjs from 'dayjs';
+import {nanoid} from 'nanoid';
 
 const generateDate = () => dayjs().add(getRandomInteger(-10, 10), 'day');
 const generateDateStart = (date) => dayjs(date).add(getRandomInteger(1,6), 'hour').format();
@@ -52,8 +53,6 @@ const generateDescriptionDestination = () => ({
   pictures: generatePictures(),
 });
 
-const generateId = () => getRandomInteger(0, 1000);
-
 export const generateEventPoints = () => {
   const date = generateDate();
   const dateFrom = generateDateStart(date);
@@ -64,7 +63,7 @@ export const generateEventPoints = () => {
     'date_from': dateFrom,
     'date_to': dateTo,
     destination: generateDescriptionDestination(),
-    id: generateId(),
+    id: nanoid(),
     'is_favorite': Boolean(getRandomInteger(0,1)),
     offers: generateOffers(),
     type: generateType(),
