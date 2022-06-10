@@ -105,11 +105,19 @@ const Mode = {
   EDIT: 'edit',
 };
 
-const FILTER_TYPES = [
-  'everything',
-  'future',
-  'past',
-];
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PAST: 'past',
+};
+
+const SortType = {
+  DEFAULT: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFER: 'offer',
+};
 
 export {
   COUNT_POINTS,
@@ -119,5 +127,6 @@ export {
   EVENT_TYPES,
   DESCRIPTION,
   Mode,
-  FILTER_TYPES,
+  FilterType,
+  SortType,
 };
