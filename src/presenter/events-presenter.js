@@ -4,18 +4,17 @@ import SortView from '../view/sort-view.js';
 import FilterView from '../view/filter-view.js';
 import EventsListView from '../view/events-list-view.js';
 import ListEmpty from '../view/list-empty-view.js';
-import {updatePoint} from '../utils/common.js';
-import {generateFilter} from '../mock/filters.js';
 import {render, RenderPosition} from '../framework/render.js';
+import {updatePoint} from '../utils/common.js';
 
 const tripMainElement = document.querySelector('.trip-main');
-const tripFilterElement = tripMainElement.querySelector('.trip-controls__filters');
+const tripFilterContainer = tripMainElement.querySelector('.trip-controls__filters');
 
 export default class EventsPresenter {
 
   #tripInfoComponent = new TripInfoView();
   #sortComponent = new SortView();
-  #filterComponent = null;
+  #filterComponent = new FilterView();
   #listEmptyComponent = new ListEmpty();
   #eventsListComponent = new EventsListView();
 
@@ -31,7 +30,6 @@ export default class EventsPresenter {
 
   init = () => {
     this.#eventsList = [...this.#eventModel.events];
-    this.#filterComponent = new FilterView(generateFilter(this.#eventsList));
     this.#renderEvents();
   };
 
@@ -53,7 +51,7 @@ export default class EventsPresenter {
   };
 
   #renderFilter = () => {
-    render(this.#filterComponent, tripFilterElement);
+    render(this.#filterComponent, tripFilterContainer);
   };
 
   #renderComponentList = () => {
@@ -68,11 +66,6 @@ export default class EventsPresenter {
     const eventPresenter = new PointPresenter(this.#eventsListComponent.element, this.#handleEventChange, this.#handleModeChange);
     eventPresenter.init(item);
     this.#eventPresenter.set(item.id, eventPresenter);
-  };
-
-  #clearEventList = () => {
-    this.#eventPresenter.forEach((presenter) => presenter.destroy());
-    this.#eventPresenter.clear();
   };
 
   #renderEvents = () => {

@@ -10,7 +10,7 @@ export default class PointPresenter {
   #changeData = null;
   #event = null;
   #changeMode = null;
-  #mode = Mode.CREATE;
+  #mode = Mode.DEFAULT;
 
   constructor(eventListContainer, changeData, changeMode) {
     this.#eventListContainer = eventListContainer;
@@ -39,7 +39,7 @@ export default class PointPresenter {
     }
 
     switch (this.#mode) {
-      case Mode.CREATE:
+      case Mode.DEFAULT:
         replace(this.#pointComponent, prevPointComponent);
         break;
       case Mode.EDIT:
@@ -59,22 +59,22 @@ export default class PointPresenter {
   };
 
   resetView = () => {
-    if (this.#mode !== Mode.CREATE) {
+    if (this.#mode !== Mode.DEFAULT) {
       this.#replaceFormToPoint();
     }
   };
 
   #replacePointToForm = () => {
-    replace(this.#formEditComponent, this.#pointComponent);
-    document.addEventListener('keydown', this.#onEscKeyDownHandler);
     this.#changeMode();
     this.#mode = Mode.EDIT;
+    replace(this.#formEditComponent, this.#pointComponent);
+    document.addEventListener('keydown', this.#onEscKeyDownHandler);
   };
 
   #replaceFormToPoint = () => {
+    this.#mode = Mode.DEFAULT;
     replace(this.#pointComponent, this.#formEditComponent);
     document.removeEventListener('keydown', this.#onEscKeyDownHandler);
-    this.#mode = Mode.CREATE;
   };
 
   #onEscKeyDownHandler = (evt) => {
@@ -98,7 +98,7 @@ export default class PointPresenter {
   };
 
   #handleDeleteClick = () => {
-    this.#replaceFormToPoint();
+    this.destroy();
   };
 
   #handleFavoriteClick = () => {
