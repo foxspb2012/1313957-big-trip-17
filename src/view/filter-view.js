@@ -1,9 +1,9 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {FILTER_TYPES} from '../constants.js';
+import {FilterType} from '../constants.js';
 
 const createFilterTemplate = () => (
   `<form class="trip-filters" action="#" method="get">
-    ${FILTER_TYPES.map((value) =>
+    ${Object.values(FilterType).map((value) =>
     `<div class="trip-filters__filter">
       <input
        id="filter-${value}"
