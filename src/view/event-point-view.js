@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {OFFERS, OFFERS_BY_TYPE} from '../constants.js';
+import {OFFERS} from '../constants.js';
 import {formatDate, getDuration} from '../utils/event.js';
 
 const createEventPointTemplate = (eventPoint) => {
@@ -17,23 +17,19 @@ const createEventPointTemplate = (eventPoint) => {
   const endTime = formatDate(dateTo, 'YYYY-MM-DDTHH:mm');
   const duration = getDuration(startTime, endTime);
 
-  const createOffersTemplate = () => {
-    const offersByType = OFFERS_BY_TYPE.filter((item) => item.type === type);
-
-    return (
-      offersByType.length > 0 ?
-        `<h4 class="visually-hidden">Offers:</h4>
+  const createOffersTemplate = () => (
+    `<h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
-        ${OFFERS.filter((item) => offersByType[0].offers.includes(item.id)).map((elem) =>
-        `<li class="event__offer">
+        ${OFFERS.filter((item) => offers.includes(item.id)).map((elem) =>
+      `<li class="event__offer">
             <span class="event__offer-title">${elem.title}</span>
             &plus;&euro;&nbsp;
             <span class="event__offer-price">${elem.price}</span>
-          </li>`).join('')}
-        </ul>` : '');
-  };
+        </li>`).join('')}
+        </ul>`
+  );
 
-  const favoriteClassName = isFavorite ? 'event__favorite-btn  event__favorite-btn--active': 'event__favorite-btn';
+  const favoriteClassName = isFavorite ? 'event__favorite-btn  event__favorite-btn--active' : 'event__favorite-btn';
 
   const offersTemplate = offers.length > 0 ? createOffersTemplate() : '';
 
