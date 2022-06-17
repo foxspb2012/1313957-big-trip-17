@@ -135,10 +135,10 @@ const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(dateFrom,'DD/MM/YY HH:mm' )}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(dateFrom,'DD/MM/YYYY HH:mm' )}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(dateTo,'DD/MM/YY HH:mm' )}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(dateTo,'DD/MM/YYYY HH:mm' )}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -314,7 +314,7 @@ export default class EventCreateEditView extends AbstractStatefulView {
         enableTime: true,
         'time_24hr': true,
         maxDate: this._state.date_to,
-        dateFormat: 'd/m/y H:i',
+        dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.date_from,
         onClose: this.#dateStartChangeHandler,
       }
@@ -328,7 +328,7 @@ export default class EventCreateEditView extends AbstractStatefulView {
         enableTime: true,
         'time_24hr': true,
         minDate: this._state.date_from,
-        dateFormat: 'd/m/y H:i',
+        dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.date_to,
         onClose: this.#dateEndChangeHandler,
       }
