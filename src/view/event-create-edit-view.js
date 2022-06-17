@@ -2,6 +2,9 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {formatDate} from '../utils/event.js';
 import {CITIES, OFFERS, OFFERS_BY_TYPE, Mode, EVENT_TYPES} from '../constants.js';
 import {DESTINATIONS} from '../mock/destinations.js';
+import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.min.css';
 
 const EVENT_CREATE = {
   'base_price': '',
@@ -132,10 +135,10 @@ const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(dateFrom,'DD/MM/YY HH:mm' )}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(dateFrom,'DD/MM/YYYY HH:mm' )}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(dateTo,'DD/MM/YY HH:mm' )}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(dateTo,'DD/MM/YYYY HH:mm' )}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -159,6 +162,8 @@ const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
 
 export default class EventCreateEditView extends AbstractStatefulView {
   #mode = null;
+  #dateStartDatepicker = null;
+  #dateEndDatepicker = null;
 
   constructor(eventPoint = EVENT_CREATE, mode = Mode.EDIT) {
     super();
@@ -171,11 +176,27 @@ export default class EventCreateEditView extends AbstractStatefulView {
     return createEventEditTemplate(this._state);
   }
 
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#dateStartDatepicker) {
+      this.#dateStartDatepicker.destroy();
+      this.#dateStartDatepicker = null;
+    }
+
+    if (this.#dateEndDatepicker) {
+      this.#dateEndDatepicker.destroy();
+      this.#dateEndDatepicker = null;
+    }
+  };
+
   _restoreHandlers = () => {
     this.#setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setDeleteClickHandler(this._callback.deleteClick);
     this.setEditClickHandler(this._callback.editClick);
+    this.#setStartDatepicker();
+    this.#setEndDatepicker();
   };
 
   reset = (point) => {
@@ -209,7 +230,8 @@ export default class EventCreateEditView extends AbstractStatefulView {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
   };
 
-  #editClickHandler = () => {
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
     this._callback.editClick();
   };
 
@@ -241,6 +263,12 @@ export default class EventCreateEditView extends AbstractStatefulView {
 
   #destinationChangeHandler = (evt) => {
     evt.preventDefault();
+
+    if(!this.#changeDestination(evt.target.value)){
+      evt.target.value = '';
+      return;
+    }
+
     this.updateElement({
       destination: this.#changeDestination(evt.target.value)
     });
@@ -267,6 +295,46 @@ export default class EventCreateEditView extends AbstractStatefulView {
     });
   };
 
+  #dateStartChangeHandler = ([userDataFrom]) => {
+    this.updateElement({
+      'date_from': userDataFrom,
+    });
+  };
+
+  #dateEndChangeHandler = ([userDateTo]) =>{
+    this.updateElement({
+      'date_to': userDateTo,
+    });
+  };
+
+  #setStartDatepicker = () => {
+    this.#dateStartDatepicker = flatpickr (
+      this.element.querySelector('input[name="event-start-time"]'),
+      {
+        enableTime: true,
+        'time_24hr': true,
+        maxDate: this._state.date_to,
+        dateFormat: 'd/m/Y H:i',
+        defaultDate: this._state.date_from,
+        onClose: this.#dateStartChangeHandler,
+      }
+    );
+  };
+
+  #setEndDatepicker = () => {
+    this.#dateEndDatepicker = flatpickr (
+      this.element.querySelector('input[name="event-end-time"]'),
+      {
+        enableTime: true,
+        'time_24hr': true,
+        minDate: this._state.date_from,
+        dateFormat: 'd/m/Y H:i',
+        defaultDate: this._state.date_to,
+        onClose: this.#dateEndChangeHandler,
+      }
+    );
+  };
+
   #setInnerHandlers = () => {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
 
@@ -278,6 +346,10 @@ export default class EventCreateEditView extends AbstractStatefulView {
     if (availableOffers) {
       availableOffers.addEventListener('change', this.#offersChangeHandler);
     }
+
+    this.element.querySelector('input[name="event-start-time"]').addEventListener('focus', this.#setStartDatepicker);
+
+    this.element.querySelector('input[name="event-end-time"]').addEventListener('focus', this.#setEndDatepicker);
   };
 
   static convertEventToState = (point) => ({...point});

@@ -8,8 +8,8 @@ const nanoid = customAlphabet('1234567890',6);
 
 
 const generateDate = () => dayjs().add(getRandomInteger(-10, 10), 'day');
-const generateDateStart = (date) => dayjs(date).add(getRandomInteger(1,6), 'hour').format();
-const generateDateTo = (dateStart) => dayjs(dateStart).add(getRandomInteger(10, 240), 'minute').format();
+const generateDateStart = (date) => dayjs(date).add(getRandomInteger(1,6), 'hour').toISOString();
+const generateDateTo = (dateStart) => dayjs(dateStart).add(getRandomInteger(10, 240), 'minute').toISOString();
 
 const generateType = () => EVENT_TYPES[getRandomInteger(0, EVENT_TYPES.length - 1)].toLowerCase();
 const generatePrice = () => getRandomInteger(10, 100);
