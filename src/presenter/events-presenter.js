@@ -1,70 +1,102 @@
-import PointPresenter from './point-presenter.js';
-import TripInfoView from '../view/trip-info-view.js';
-import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
-import ListEmpty from '../view/list-empty-view.js';
-import {render, RenderPosition} from '../framework/render.js';
-import {updatePoint} from '../utils/common.js';
-import {sortPointsTime, sortPointsPrice} from '../utils/sorting.js';
-import {SortType} from '../constants.js';
-
-const tripMainElement = document.querySelector('.trip-main');
-const tripFilterContainer = tripMainElement.querySelector('.trip-controls__filters');
+import EventSectionView from '../view/event-section-view.js';
+import PointNewPresenter from './point-new-presenter.js';
+import PointPresenter from './point-presenter.js';
+import NoEventsView from '../view/no-events-view.js';
+import {remove, render, RenderPosition} from '../framework/render.js';
+import {sortPointsDay, sortPointsTime, sortPointsPrice} from '../utils/sorting.js';
+import {filter} from '../utils/filter.js';
+import {FilterType, SortType, UpdateType, UserAction} from '../constants.js';
 
 export default class EventsPresenter {
 
-  #tripInfoComponent = new TripInfoView();
-  #filterComponent = new FilterView();
-  #sortComponent = new SortView();
-  #listEmptyComponent = new ListEmpty();
+  #eventComponent = new EventSectionView();
   #eventsListComponent = new EventsListView();
+  #sortComponent = null;
+  #noEventsComponent = null;
 
   #eventContainer = null;
   #eventModel = null;
-  #eventsList = [];
-  #eventPresenter = new Map();
-  #currentSortType = SortType.DEFAULT;
-  #sourceEventPoints = [];
+  #filterModel = null;
 
-  constructor(eventContainer, eventModel) {
+  #eventPresenter = new Map();
+  #pointNewPresenter = null;
+
+  #currentSortType = SortType.DEFAULT;
+  #filterType = FilterType.EVERYTHING;
+
+  constructor(eventContainer, eventModel, filterModel) {
     this.#eventContainer = eventContainer;
     this.#eventModel = eventModel;
+    this.#filterModel = filterModel;
+
+    this.#pointNewPresenter = new PointNewPresenter(this.#eventsListComponent.element, this.#handleViewAction);
+
+    this.#eventModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
+  }
+
+  get events() {
+    this.#filterType = this.#filterModel.filter;
+    const events = this.#eventModel.events;
+    const filteredEvents = filter[this.#filterType](events);
+
+    switch(this.#currentSortType) {
+      case SortType.DEFAULT:
+        return filteredEvents.sort(sortPointsDay);
+      case SortType.TIME:
+        return filteredEvents.sort(sortPointsTime);
+      case SortType.PRICE:
+        return filteredEvents.sort(sortPointsPrice);
+    }
+
+    return filteredEvents;
   }
 
   init = () => {
-    this.#eventsList = [...this.#eventModel.events];
-    this.#sourceEventPoints = [...this.#eventModel.events];
-    this.#renderEvents();
+    this.#renderEventSection();
+  };
+
+  createEvent = (callback) => {
+    this.#currentSortType = SortType.DEFAULT;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#pointNewPresenter.init(callback);
   };
 
   #handleModeChange = () => {
+    this.#pointNewPresenter.destroy();
     this.#eventPresenter.forEach((presenter) => presenter.resetView());
   };
 
-  #handleEventChange = (updatedEvent) => {
-    this.#eventsList = updatePoint(this.#eventsList, updatedEvent);
-
-    this.#eventPresenter.get(updatedEvent.id).init(updatedEvent);
-  };
-
-  #renderTripInfo = () => {
-    render(this.#tripInfoComponent, tripMainElement, RenderPosition.AFTERBEGIN);
-  };
-
-  #sortPoints = (sortType) => {
-    switch(sortType) {
-      case SortType.TIME:
-        this.#eventsList.sort(sortPointsTime);
+  #handleViewAction = (actionType, updateType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_EVENT:
+        this.#eventModel.updateEvent(updateType, update);
         break;
-      case SortType.PRICE:
-        this.#eventsList.sort(sortPointsPrice);
+      case UserAction.ADD_EVENT:
+        this.#eventModel.addEvent(updateType, update);
         break;
-      default:
-        this.#eventsList = [...this.#sourceEventPoints];
+      case UserAction.DELETE_EVENT:
+        this.#eventModel.deleteEvent(updateType, update);
+        break;
     }
+  };
 
-    this.#currentSortType = sortType;
+  #handleModelEvent = (updateType, data) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#eventPresenter.get(data.id).init(data);
+        break;
+      case UpdateType.MINOR:
+        this.#clearEventSection();
+        this.#renderEventSection();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearEventSection({resetSortType: true});
+        this.#renderEventSection();
+        break;
+    }
   };
 
   #handleSortTypeChange = (sortType) => {
@@ -72,52 +104,62 @@ export default class EventsPresenter {
       return;
     }
 
-    this.#sortPoints(sortType);
-    this.#clearEventsList();
-    this.#renderPoints();
+    this.#currentSortType = sortType;
+    this.#clearEventSection();
+    this.#renderEventSection();
   };
 
   #renderSort = () => {
-    render(this.#sortComponent, this.#eventContainer);
+    this.#sortComponent = new SortView(this.#currentSortType);
     this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
-  };
 
-  #renderFilter = () => {
-    render(this.#filterComponent, tripFilterContainer);
-  };
-
-  #renderComponentList = () => {
-    render(this.#eventsListComponent, this.#eventContainer);
-  };
-
-  #renderNoEvents = () => {
-    render(this.#listEmptyComponent, this.#eventContainer);
+    render(this.#sortComponent, this.#eventComponent.element, RenderPosition.AFTERBEGIN);
   };
 
   #renderEvent = (item) => {
-    const eventPresenter = new PointPresenter(this.#eventsListComponent.element, this.#handleEventChange, this.#handleModeChange);
-    eventPresenter.init(item);
-    this.#eventPresenter.set(item.id, eventPresenter);
+    const pointPresenter = new PointPresenter(this.#eventsListComponent.element, this.#handleViewAction, this.#handleModeChange);
+    pointPresenter.init(item);
+    this.#eventPresenter.set(item.id, pointPresenter);
   };
 
-  #clearEventsList = () => {
+  #renderEvents = (events) => {
+    events.forEach((event) => this.#renderEvent(event));
+  };
+
+  #renderNoEvents = () => {
+    this.#noEventsComponent = new NoEventsView(this.#filterType);
+    render(this.#noEventsComponent, this.#eventContainer);
+  };
+
+  #clearEventSection = ({resetSortType = false} = {}) => {
+    this.#pointNewPresenter.destroy();
     this.#eventPresenter.forEach((presenter) => presenter.destroy());
     this.#eventPresenter.clear();
+
+    remove(this.#sortComponent);
+
+    if (this.#noEventsComponent) {
+      remove(this.#noEventsComponent);
+    }
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.DEFAULT;
+    }
   };
 
-  #renderPoints = () =>{
-    this.#eventsList.forEach(this.#renderEvent);
-  };
+  #renderEventSection = () => {
+    const events = this.events;
+    const eventCount = events.length;
 
-  #renderEvents = () => {
-    if (!this.#eventsList.length) {
+    render(this.#eventComponent, this.#eventContainer);
+
+    if (eventCount === 0) {
       this.#renderNoEvents();
       return;
     }
-    this.#renderTripInfo();
-    this.#renderFilter();
+
     this.#renderSort();
-    this.#renderComponentList();
-    this.#renderPoints();
+    render(this.#eventsListComponent, this.#eventComponent.element);
+    this.#renderEvents(events);
   };
 }
