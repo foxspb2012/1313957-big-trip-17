@@ -11,16 +11,16 @@ const EVENT_CREATE = {
   'date_from': formatDate(new Date(), 'YYYY-MM-DD HH:mm'),
   'date_to': formatDate(new Date(), 'YYYY-MM-DD HH:mm'),
   destination: {
-    description: [],
+    description: '',
     name: '',
     pictures: [],
   },
   id: null,
   offers: [],
-  type: 'taxi',
+  type: '',
 };
 
-const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
+const createEventEditTemplate = (eventPoint= EVENT_CREATE, mode = Mode.EDIT) => {
   const {
     base_price: basePrice,
     date_from: dateFrom,
@@ -82,7 +82,7 @@ const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
     }
     return (
       `<button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-      <button class="event__reset-btn" type="reset">Cancel</button>`
+      <button class="event__reset-btn cancel" type="reset">Cancel</button>`
     );
   };
 
@@ -111,7 +111,8 @@ const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-1">
               <span class="visually-hidden">Choose event type</span>
-              <img class="event__type-icon" width="42" height="42" src="img/icons/${type.toLowerCase()}.png" alt="Event type icon">
+              <img class="event__type-icon" width="42" height="42" src="${type !== '' ? `img/icons/${type.toLowerCase()}.png` : `img/icons/${EVENT_TYPES[0]}.png`}"
+                alt="Event type icon">
             </label>
             <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -127,7 +128,8 @@ const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" list="destination-list-1" value=${destination.name}>
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination"
+                list="destination-list-1" required value=${destination.name}>
             <datalist id="destination-list-1">
              ${destinationPoints}
             </datalist>
@@ -146,7 +148,7 @@ const createEventEditTemplate = (eventPoint, mode = Mode.EDIT) => {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+            <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}" required>
           </div>
 
           ${buttons}
@@ -167,13 +169,13 @@ export default class EventCreateEditView extends AbstractStatefulView {
 
   constructor(eventPoint = EVENT_CREATE, mode = Mode.EDIT) {
     super();
-    this._state = EventCreateEditView.convertEventToState(eventPoint);
-    this.#setInnerHandlers();
     this.#mode = mode;
+    this._state = EventCreateEditView.convertEventToState(eventPoint, this.#mode);
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createEventEditTemplate(this._state);
+    return createEventEditTemplate(this._state, this.#mode);
   }
 
   removeElement = () => {
@@ -193,6 +195,7 @@ export default class EventCreateEditView extends AbstractStatefulView {
   _restoreHandlers = () => {
     this.#setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setCancelClickHandler(this._callback.editClick);
     this.setDeleteClickHandler(this._callback.deleteClick);
     this.setEditClickHandler(this._callback.editClick);
     this.#setStartDatepicker();
@@ -216,18 +219,29 @@ export default class EventCreateEditView extends AbstractStatefulView {
   };
 
   setDeleteClickHandler = (callback) => {
-    this._callback.deleteClick = callback;
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
+    if (this.element.querySelector('.event__reset-btn')) {
+      this._callback.deleteClick = callback;
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
+    }
   };
 
   #deleteClickHandler = (evt) => {
     evt.preventDefault();
-    this._callback.deleteClick();
+    this._callback.deleteClick(EventCreateEditView.convertStateToEvent(this._state));
   };
 
   setEditClickHandler = (callback) => {
-    this._callback.editClick = callback;
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    if (this.element.querySelector('.event__rollup-btn')) {
+      this._callback.editClick = callback;
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    }
+  };
+
+  setCancelClickHandler = (callback) => {
+    if (this.element.querySelector('.event__reset-btn.cancel')) {
+      this._callback.editClick = callback;
+      this.element.querySelector('.event__reset-btn.cancel').addEventListener('click', this.#editClickHandler);
+    }
   };
 
   #editClickHandler = (evt) => {

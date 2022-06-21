@@ -1,15 +1,18 @@
 import EventPointView from '../view/event-point-view.js';
 import EventCreateEditView from '../view/event-create-edit-view.js';
-import {Mode} from '../constants.js';
+import {Mode, UserAction, UpdateType} from '../constants.js';
 import {render, replace, remove} from '../framework/render.js';
+import {isDatesEqual} from '../utils/event.js';
 
 export default class PointPresenter {
-  #pointComponent = null;
-  #formEditComponent = null;
   #eventListContainer = null;
   #changeData = null;
-  #event = null;
   #changeMode = null;
+
+  #pointComponent = null;
+  #formEditComponent = null;
+
+  #event = null;
   #mode = Mode.DEFAULT;
 
   constructor(eventListContainer, changeData, changeMode) {
@@ -91,19 +94,36 @@ export default class PointPresenter {
   };
 
   #handleRollUpClick = () => {
+    this.#formEditComponent.reset(this.#event);
     this.#replaceFormToPoint();
   };
 
-  #handleFormSubmit = (point) => {
-    this.#changeData(point);
+  #handleFormSubmit = (update) => {
+    const isMinorUpdate =
+      !isDatesEqual(this.#event.date_to, update.date_to) ||
+      !isDatesEqual(this.#event.date_from, update.date_from);
+
+    this.#changeData(
+      UserAction.UPDATE_EVENT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      update,
+    );
     this.#replaceFormToPoint();
   };
 
-  #handleDeleteClick = () => {
-    this.destroy();
+  #handleDeleteClick = (event) => {
+    this.#changeData(
+      UserAction.DELETE_EVENT,
+      UpdateType.MINOR,
+      event,
+    );
   };
 
   #handleFavoriteClick = () => {
-    this.#changeData({...this.#event, 'is_favorite': !this.#event.is_favorite});
+    this.#changeData(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      {...this.#event, 'is_favorite': !this.#event.is_favorite},
+    );
   };
 }

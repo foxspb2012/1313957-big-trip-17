@@ -108,6 +108,18 @@ const SortType = {
   OFFER: 'offer',
 };
 
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+const UserAction = {
+  UPDATE_EVENT: 'UPDATE_EVENT',
+  ADD_EVENT: 'ADD_EVENT',
+  DELETE_EVENT: 'DELETE_EVENT',
+};
+
 export {
   COUNT_POINTS,
   OFFERS,
@@ -117,4 +129,6 @@ export {
   Mode,
   FilterType,
   SortType,
+  UpdateType,
+  UserAction,
 };
