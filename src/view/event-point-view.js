@@ -1,14 +1,14 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {OFFERS} from '../constants.js';
 import {formatDate, getDuration} from '../utils/event.js';
+import {getEventOffers} from '../utils/point.js';
 
-const createEventPointTemplate = (eventPoint) => {
+const createEventPointTemplate = (eventPoint, allOffers) => {
   const {
-    base_price: basePrice,
-    date_from: dateFrom,
-    date_to: dateTo,
+    basePrice,
+    dateFrom,
+    dateTo,
     destination,
-    is_favorite: isFavorite,
+    isFavorite,
     offers,
     type,
   } = eventPoint;
@@ -17,10 +17,12 @@ const createEventPointTemplate = (eventPoint) => {
   const endTime = formatDate(dateTo, 'YYYY-MM-DDTHH:mm');
   const duration = getDuration(startTime, endTime);
 
+  const offersByType = getEventOffers(allOffers, type).offers;
+
   const createOffersTemplate = () => (
     `<h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
-        ${OFFERS.filter((item) => offers.includes(item.id)).map((elem) =>
+        ${offersByType.filter((item) => offers.includes(item.id)).map((elem) =>
       `<li class="event__offer">
             <span class="event__offer-title">${elem.title}</span>
             &plus;&euro;&nbsp;
@@ -69,14 +71,16 @@ const createEventPointTemplate = (eventPoint) => {
 
 export default class EventPointView extends AbstractView {
   #newPoint = null;
+  #offers = null;
 
-  constructor(newPoint) {
+  constructor(newPoint, offers) {
     super();
     this.#newPoint = newPoint;
+    this.#offers = offers;
   }
 
   get template() {
-    return createEventPointTemplate(this.#newPoint);
+    return createEventPointTemplate(this.#newPoint, this.#offers);
   }
 
   setEditClickHandler = (callback) => {

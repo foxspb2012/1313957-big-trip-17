@@ -1,30 +1,33 @@
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
-import EventSectionView from '../view/event-section-view.js';
 import PointNewPresenter from './point-new-presenter.js';
 import PointPresenter from './point-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
+import LoadingView from '../view/loading-view.js';
 import {remove, render, RenderPosition} from '../framework/render.js';
 import {sortPointsDay, sortPointsTime, sortPointsPrice} from '../utils/sorting.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+import {FilterType, SortType, UpdateType, UserAction, TimeLimit, Mode} from '../constants.js';
 import {filter} from '../utils/filter.js';
-import {FilterType, SortType, UpdateType, UserAction} from '../constants.js';
 
 export default class EventsPresenter {
-
-  #eventComponent = new EventSectionView();
-  #eventsListComponent = new EventsListView();
-  #sortComponent = null;
-  #noEventsComponent = null;
 
   #eventContainer = null;
   #eventModel = null;
   #filterModel = null;
 
+  #loadingComponent = new LoadingView();
+  #eventsListComponent = new EventsListView();
   #eventPresenter = new Map();
+  #sortComponent = null;
+  #noEventsComponent = null;
   #pointNewPresenter = null;
 
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
+
+  #isLoading = true;
+  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
 
   constructor(eventContainer, eventModel, filterModel) {
     this.#eventContainer = eventContainer;
@@ -37,31 +40,39 @@ export default class EventsPresenter {
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
-  get events() {
+  get points() {
     this.#filterType = this.#filterModel.filter;
-    const events = this.#eventModel.events;
-    const filteredEvents = filter[this.#filterType](events);
+    const points = this.#eventModel.points;
+    const filteredPoints = filter[this.#filterType](points);
 
     switch(this.#currentSortType) {
       case SortType.DEFAULT:
-        return filteredEvents.sort(sortPointsDay);
+        return filteredPoints.sort(sortPointsDay);
       case SortType.TIME:
-        return filteredEvents.sort(sortPointsTime);
+        return filteredPoints.sort(sortPointsTime);
       case SortType.PRICE:
-        return filteredEvents.sort(sortPointsPrice);
+        return filteredPoints.sort(sortPointsPrice);
     }
 
-    return filteredEvents;
+    return filteredPoints;
+  }
+
+  get offers() {
+    return this.#eventModel.offers;
+  }
+
+  get destinations() {
+    return this.#eventModel.destinations;
   }
 
   init = () => {
     this.#renderEventSection();
   };
 
-  createEvent = (callback) => {
+  createEvent = (callback, destinations, offers) => {
     this.#currentSortType = SortType.DEFAULT;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#pointNewPresenter.init(callback);
+    this.#pointNewPresenter.init(callback, destinations, offers, Mode.DEFAULT);
   };
 
   #handleModeChange = () => {
@@ -69,24 +80,45 @@ export default class EventsPresenter {
     this.#eventPresenter.forEach((presenter) => presenter.resetView());
   };
 
-  #handleViewAction = (actionType, updateType, update) => {
-    switch (actionType) {
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
+    switch(actionType) {
       case UserAction.UPDATE_EVENT:
-        this.#eventModel.updateEvent(updateType, update);
+        this.#eventPresenter.get(update.id).setSaving();
+        try {
+          await this.#eventModel.updateEvent(updateType, update);
+        } catch {
+          this.#eventPresenter.get(update.id).setAborting();
+        }
         break;
       case UserAction.ADD_EVENT:
-        this.#eventModel.addEvent(updateType, update);
+        this.#pointNewPresenter.setSaving();
+        try {
+          await this.#eventModel.addEvent(updateType, update);
+        } catch {
+          this.#pointNewPresenter.setAborting();
+        }
         break;
       case UserAction.DELETE_EVENT:
-        this.#eventModel.deleteEvent(updateType, update);
+        this.#eventPresenter.get(update.id).setDeleting();
+        try {
+          await this.#eventModel.deleteEvent(updateType, update);
+        } catch {
+          this.#eventPresenter.get(update.id).setAborting();
+        }
         break;
+      default:
+        throw new Error(`actionType: ${actionType} not exist`);
     }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        this.#eventPresenter.get(data.id).init(data);
+        this.#eventPresenter.get(data.id).init(data, this.destinations, this.offers);
         break;
       case UpdateType.MINOR:
         this.#clearEventSection();
@@ -96,7 +128,18 @@ export default class EventsPresenter {
         this.#clearEventSection({resetSortType: true});
         this.#renderEventSection();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderEventSection();
+        break;
+      default:
+        throw new Error('updateType not exist');
     }
+  };
+
+  #renderLoading = () => {
+    render(this.#loadingComponent, this.#eventsListComponent.element, RenderPosition.AFTERBEGIN);
   };
 
   #handleSortTypeChange = (sortType) => {
@@ -113,22 +156,32 @@ export default class EventsPresenter {
     this.#sortComponent = new SortView(this.#currentSortType);
     this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
 
-    render(this.#sortComponent, this.#eventComponent.element, RenderPosition.AFTERBEGIN);
+    render(this.#sortComponent, this.#eventContainer, RenderPosition.AFTERBEGIN);
   };
 
-  #renderEvent = (item) => {
+  #renderEvent = (item, destinations, offers) => {
     const pointPresenter = new PointPresenter(this.#eventsListComponent.element, this.#handleViewAction, this.#handleModeChange);
-    pointPresenter.init(item);
+    pointPresenter.init(item, destinations, offers);
     this.#eventPresenter.set(item.id, pointPresenter);
   };
 
-  #renderEvents = (events) => {
-    events.forEach((event) => this.#renderEvent(event));
-  };
+  #renderEventSection = () => {
+    render(this.#eventsListComponent, this.#eventContainer);
 
-  #renderNoEvents = () => {
-    this.#noEventsComponent = new NoEventsView(this.#filterType);
-    render(this.#noEventsComponent, this.#eventContainer);
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
+    if (!this.points.length) {
+      this.#noEventsComponent = new NoEventsView(this.#filterType);
+      render(this.#noEventsComponent, this.#eventContainer);
+      return;
+    }
+
+    this.#renderSort();
+    this.points.forEach((item) => this.#renderEvent(item, this.destinations, this.offers));
+    this.points.sort(sortPointsDay);
   };
 
   #clearEventSection = ({resetSortType = false} = {}) => {
@@ -137,6 +190,7 @@ export default class EventsPresenter {
     this.#eventPresenter.clear();
 
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
 
     if (this.#noEventsComponent) {
       remove(this.#noEventsComponent);
@@ -145,21 +199,5 @@ export default class EventsPresenter {
     if (resetSortType) {
       this.#currentSortType = SortType.DEFAULT;
     }
-  };
-
-  #renderEventSection = () => {
-    const events = this.events;
-    const eventCount = events.length;
-
-    render(this.#eventComponent, this.#eventContainer);
-
-    if (eventCount === 0) {
-      this.#renderNoEvents();
-      return;
-    }
-
-    this.#renderSort();
-    render(this.#eventsListComponent, this.#eventComponent.element);
-    this.#renderEvents(events);
   };
 }

@@ -1,23 +1,24 @@
-import {render} from './framework/render.js';
+import TripInfoPresenter from './presenter/trip-info-presenter.js';
 import NewEventButtonView from './view/new-event-button-view.js';
-import InfoMainView from './view/info-main-view.js';
-import InfoCostView from './view/info-cost-view.js';
-import EventsPresenter from './presenter/events-presenter.js';
-import FilterPresenter from './presenter/filter-presenter.js';
-import EventModel from './model/event-model.js';
 import FilterModel from './model/filter-model.js';
+import EventsModel from './model/events-model.js';
+import FilterPresenter from './presenter/filter-presenter.js';
+import EventsPresenter from './presenter/events-presenter.js';
+import EventsApiService from './api/events-api-service.js';
+import {render} from './framework/render.js';
+
+const AUTHORIZATION = 'Basic B5aRebaBD95Kh74';
+const END_POINT = 'https://17.ecmascript.pages.academy/big-trip/';
 
 const siteMainElement = document.querySelector('.trip-main');
-const siteInfoElement = siteMainElement.querySelector('.trip-main__trip-info');
 const siteFilterElement = siteMainElement.querySelector('.trip-controls__filters');
+const tripEventsContainer = document.querySelector('.trip-events');
 
-const sitePageMainElement = document.querySelector('.page-body__page-main');
-const sitePageBodyElement = sitePageMainElement.querySelector('.page-body__container');
-
-const eventsModel = new EventModel();
+const eventsModel = new EventsModel(new EventsApiService(END_POINT, AUTHORIZATION));
 const filterModel = new FilterModel();
-const eventPresenter = new EventsPresenter(sitePageBodyElement, eventsModel, filterModel);
+const eventsPresenter = new EventsPresenter(tripEventsContainer, eventsModel, filterModel);
 const filterPresenter = new FilterPresenter(siteFilterElement, filterModel, eventsModel);
+const tripInfoPresenter = new TripInfoPresenter(siteMainElement, eventsPresenter, eventsModel);
 const newEventButtonComponent = new NewEventButtonView();
 
 const handleNewEventFormClose = () => {
@@ -25,15 +26,15 @@ const handleNewEventFormClose = () => {
 };
 
 const handleNewEventButtonClick = () => {
-  eventPresenter.createEvent(handleNewEventFormClose);
+  eventsPresenter.createEvent(handleNewEventFormClose, eventsModel.destinations, eventsModel.offers);
   newEventButtonComponent.element.disabled = true;
 };
 
-render(newEventButtonComponent, siteMainElement);
-newEventButtonComponent.setClickHandler(handleNewEventButtonClick);
-
-render(new InfoMainView(), siteInfoElement);
-render(new InfoCostView(), siteInfoElement);
-
 filterPresenter.init();
-eventPresenter.init();
+eventsPresenter.init();
+eventsModel.init()
+  .finally(() => {
+    tripInfoPresenter.init();
+    render(newEventButtonComponent, siteMainElement);
+    newEventButtonComponent.setClickHandler(handleNewEventButtonClick);
+  });
