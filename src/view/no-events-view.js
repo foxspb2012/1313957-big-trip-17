@@ -15,7 +15,7 @@ const createNoEventTemplate = (filterType) => {
   );
 };
 
-export default class ListEmpty extends AbstractView {
+export default class NoEventView extends AbstractView {
   #filterType = null;
 
   constructor(filterType) {

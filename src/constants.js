@@ -1,5 +1,3 @@
-const COUNT_POINTS = 20;
-
 const OFFERS = [
   {
     'id': 1,
@@ -112,6 +110,7 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };
 
 const UserAction = {
@@ -120,8 +119,12 @@ const UserAction = {
   DELETE_EVENT: 'DELETE_EVENT',
 };
 
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
+
 export {
-  COUNT_POINTS,
   OFFERS,
   OFFERS_BY_TYPE,
   CITIES,
@@ -131,4 +134,5 @@ export {
   SortType,
   UpdateType,
   UserAction,
+  TimeLimit,
 };

@@ -21,14 +21,14 @@ export default class PointPresenter {
     this.#changeMode = changeMode;
   }
 
-  init = (point) => {
+  init = (point, destinations, offers) => {
     this.#event = point;
 
     const prevPointComponent = this.#pointComponent;
     const prevFormEditComponent = this.#formEditComponent;
 
-    this.#pointComponent = new EventPointView(point);
-    this.#formEditComponent = new EventCreateEditView(point);
+    this.#pointComponent = new EventPointView(point, offers);
+    this.#formEditComponent = new EventCreateEditView(point, destinations, offers);
 
     this.#pointComponent.setEditClickHandler(this.#handleEditClick);
     this.#pointComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
@@ -47,6 +47,7 @@ export default class PointPresenter {
         break;
       case Mode.EDIT:
         replace(this.#formEditComponent, prevFormEditComponent);
+        this.#mode = Mode.DEFAULT;
         break;
       default:
         throw new Error('Mode undefined');
@@ -66,6 +67,41 @@ export default class PointPresenter {
       this.#formEditComponent.reset(this.#event);
       this.#replaceFormToPoint();
     }
+  };
+
+  setSaving = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#formEditComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#formEditComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  };
+
+  setAborting = () => {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#pointComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#formEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#formEditComponent.shake(resetFormState);
   };
 
   #replacePointToForm = () => {
@@ -100,8 +136,8 @@ export default class PointPresenter {
 
   #handleFormSubmit = (update) => {
     const isMinorUpdate =
-      !isDatesEqual(this.#event.date_to, update.date_to) ||
-      !isDatesEqual(this.#event.date_from, update.date_from);
+      !isDatesEqual(this.#event.dateTo, update.dateTo) ||
+      !isDatesEqual(this.#event.dateFrom, update.dateFrom);
 
     this.#changeData(
       UserAction.UPDATE_EVENT,
@@ -123,7 +159,7 @@ export default class PointPresenter {
     this.#changeData(
       UserAction.UPDATE_EVENT,
       UpdateType.MINOR,
-      {...this.#event, 'is_favorite': !this.#event.is_favorite},
+      {...this.#event, isFavorite: !this.#event.isFavorite},
     );
   };
 }
