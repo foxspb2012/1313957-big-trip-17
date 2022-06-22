@@ -1,5 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {formatDate} from '../utils/event.js';
+import {getEventOffers} from '../utils/point.js';
 import {Mode, EVENT_TYPES} from '../constants.js';
 import flatpickr from 'flatpickr';
 import dayjs from 'dayjs';
@@ -8,8 +9,8 @@ import 'flatpickr/dist/flatpickr.min.css';
 
 const EVENT_CREATE = {
   basePrice: '',
-  dateFrom: `${dayjs()}`,
-  dateTo: `${dayjs().add(7, 'd')}`,
+  dateFrom: dayjs().toDate(),
+  dateTo: dayjs().add(7, 'd').toDate(),
   destination: {
     description: '',
     name: '',
@@ -35,8 +36,7 @@ const createEventEditTemplate = (eventPoint= EVENT_CREATE, destinations, allOffe
   } = eventPoint;
 
   const cities = destinations.map((city) => city.name);
-  const getEventOffers = (pointType) => allOffers.find((offer) => offer.type === pointType);
-  const offersByType = type !== '' ? getEventOffers(type).offers : [];
+  const offersByType = type !== '' ? getEventOffers(allOffers, type).offers : [];
 
   const createDestinationPoints = () => (
     `${cities.map((elem) =>
@@ -154,7 +154,7 @@ const createEventEditTemplate = (eventPoint= EVENT_CREATE, destinations, allOffe
               &euro;
             </label>
             <input class="event__input  event__input--price" id="event-price-1" type="number"
-                name="event-price" value="${basePrice}" required ${isDisabled ? 'disabled' : ''}>
+                name="event-price" value="${basePrice}" min="1" max="100000" required ${isDisabled ? 'disabled' : ''}>
           </div>
 
           ${buttons}
@@ -278,6 +278,13 @@ export default class EventCreateEditView extends AbstractStatefulView {
 
     if (!destination){
       evt.target.value = '';
+      this.updateElement({
+        destination: {
+          description: '',
+          name: '',
+          pictures: []
+        },
+      });
       return;
     }
 

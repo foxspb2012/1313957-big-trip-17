@@ -165,23 +165,6 @@ export default class EventsPresenter {
     this.#eventPresenter.set(item.id, pointPresenter);
   };
 
-  #clearEventSection = ({resetSortType = false} = {}) => {
-    this.#pointNewPresenter.destroy();
-    this.#eventPresenter.forEach((presenter) => presenter.destroy());
-    this.#eventPresenter.clear();
-
-    remove(this.#sortComponent);
-    remove(this.#loadingComponent);
-
-    if (this.#noEventsComponent) {
-      remove(this.#noEventsComponent);
-    }
-
-    if (resetSortType) {
-      this.#currentSortType = SortType.DEFAULT;
-    }
-  };
-
   #renderEventSection = () => {
     render(this.#eventsListComponent, this.#eventContainer);
 
@@ -199,5 +182,22 @@ export default class EventsPresenter {
     this.#renderSort();
     this.points.forEach((item) => this.#renderEvent(item, this.destinations, this.offers));
     this.points.sort(sortPointsDay);
+  };
+
+  #clearEventSection = ({resetSortType = false} = {}) => {
+    this.#pointNewPresenter.destroy();
+    this.#eventPresenter.forEach((presenter) => presenter.destroy());
+    this.#eventPresenter.clear();
+
+    remove(this.#sortComponent);
+    remove(this.#loadingComponent);
+
+    if (this.#noEventsComponent) {
+      remove(this.#noEventsComponent);
+    }
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.DEFAULT;
+    }
   };
 }

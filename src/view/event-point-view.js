@@ -1,5 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import {formatDate, getDuration} from '../utils/event.js';
+import {getEventOffers} from '../utils/point.js';
 
 const createEventPointTemplate = (eventPoint, allOffers) => {
   const {
@@ -16,8 +17,7 @@ const createEventPointTemplate = (eventPoint, allOffers) => {
   const endTime = formatDate(dateTo, 'YYYY-MM-DDTHH:mm');
   const duration = getDuration(startTime, endTime);
 
-  const getEventOffers = (pointType) => allOffers.find((offer) => offer.type === pointType);
-  const offersByType = getEventOffers(type).offers;
+  const offersByType = getEventOffers(allOffers, type).offers;
 
   const createOffersTemplate = () => (
     `<h4 class="visually-hidden">Offers:</h4>

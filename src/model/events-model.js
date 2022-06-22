@@ -26,10 +26,15 @@ export default class EventsModel extends Observable {
 
   init = async () => {
     try {
-      const points = await this.#eventsApiService.points;
-      this.#offers = await this.#eventsApiService.offers;
-      this.#destinations = await this.#eventsApiService.destinations;
+      const [points, offers, destinations] = await Promise.all([
+        this.#eventsApiService.points,
+        this.#eventsApiService.offers,
+        this.#eventsApiService.destinations
+      ]);
+
       this.#points = points.map(this.#adaptToClient);
+      this.#offers = offers;
+      this.#destinations = destinations;
     } catch(err) {
       this.#points = [];
       this.#offers = [];
@@ -91,7 +96,8 @@ export default class EventsModel extends Observable {
   };
 
   #adaptToClient = (event) => {
-    const adaptedEvent = {...event,
+    const adaptedEvent = {
+      ...event,
       basePrice: event['base_price'],
       dateFrom: new Date(event['date_from']),
       dateTo: new Date(event['date_to']),
