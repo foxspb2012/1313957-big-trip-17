@@ -3,6 +3,7 @@ import EventsListView from '../view/events-list-view.js';
 import PointNewPresenter from './point-new-presenter.js';
 import PointPresenter from './point-presenter.js';
 import NoEventsView from '../view/no-events-view.js';
+import LoadingErrorView from '../view/loading-error-view.js';
 import LoadingView from '../view/loading-view.js';
 import {remove, render, RenderPosition} from '../framework/render.js';
 import {sortPointsDay, sortPointsTime, sortPointsPrice} from '../utils/sorting.js';
@@ -170,6 +171,12 @@ export default class EventsPresenter {
 
     if (this.#isLoading) {
       this.#renderLoading();
+      return;
+    }
+
+    if (!this.points.length && !this.offers.length  && !this.destinations.length ) {
+      this.#noEventsComponent = new LoadingErrorView();
+      render(this.#noEventsComponent, this.#eventContainer);
       return;
     }
 
