@@ -8,7 +8,7 @@ import EventsApiService from './api/events-api-service.js';
 import {render} from './framework/render.js';
 
 const AUTHORIZATION = 'Basic B5aRebaBD95Kh74';
-const END_POINT = 'https://17.ecmascript.pages.academy/big-tri/';
+const END_POINT = 'https://17.ecmascript.pages.academy/big-trip/';
 
 const siteMainElement = document.querySelector('.trip-main');
 const siteFilterElement = siteMainElement.querySelector('.trip-controls__filters');
