@@ -114,7 +114,7 @@ const createEventEditTemplate = (eventPoint= EVENT_CREATE, destinations, allOffe
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-1">
               <span class="visually-hidden">Choose event type</span>
-              <img class="event__type-icon" width="42" height="42" src="${type !== '' ? `img/icons/${type.toLowerCase()}.png` : `img/icons/${EVENT_TYPES[0]}.png`}"
+              <img class="event__type-icon" width="42" height="42" src="${type !== '' ? `img/icons/${type.toLowerCase()}.png` : `img/icons/${EVENT_TYPES[0].toLowerCase()}.png`}"
                 alt="Event type icon">
             </label>
             <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? 'disabled' : ''}>
